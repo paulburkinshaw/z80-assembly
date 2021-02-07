@@ -1,0 +1,7 @@
+	ORG #7530
+	LD A, 2
+	CALL 5633
+	LD A, 33
+	RST 16
+	RET
+	
