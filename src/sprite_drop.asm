@@ -1,3 +1,15 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;   11:25 am 14/2/2021   Started Sprite Drop
+;   21:47 pm 14/2/2021   8x8 sprite falls from top of screen
+;
+;   Simple demo showing an 8x8 sprite
+;   "falling" from the top to the bottom
+;   of the screen 1 pixel at a time
+;
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; This is a basic template file for writing 48K Spectrum code.
 
 AppFilename             equ "NewFile"                   ; What we're called (for file generation)
@@ -11,108 +23,82 @@ AppFirst                equ $8000                       ; First byte of code (un
 ; *********************************************************************************
 
 
-                        org AppFirst
+        org AppFirst
 
-AppEntry                nop
-
-screen_width_pixels:    equ 256
-screen_height_pixels:   equ 192
-screen_width_chars:     equ 32
-screen_height_chars:    equ 24
-
-screen_start:           equ #4000
-screen_size:            equ screen_width_chars * screen_height_pixels
-attr_start:             equ #5800
-attributes_length:      equ screen_width_chars * screen_height_chars
-
-x_coordinate:           equ 15
-y_coordinate:           equ 2
-
-; attribute colour values
-ink_black:              equ %000000
-ink_blue:               equ %000001
-ink_red:                equ %000010
-ink_magenta:            equ %000011
-ink_green:              equ %000100
-ink_cyan:               equ %000101
-ink_yellow:             equ %000110
-ink_white:              equ %000111
-
-paper_black:            equ ink_black << 3
-paper_blue:             equ ink_blue  << 3
-paper_red:              equ ink_red  << 3
-paper_magenta:          equ ink_magenta  << 3
-paper_green:            equ ink_green  << 3
-paper_cyan:             equ ink_cyan  << 3
-paper_yellow:           equ ink_yellow  << 3
-paper_white:            equ ink_white  << 3
-
-bright:                 equ %1000000
-
-; ************************
-; *** setup the screen ***
-; ************************
-
-
-; draw the ceiling
-        ;ld b,screen_width_chars
-        ;ld hl,screen_start
-        ;call DRAWCEILING
-
-; place a pixel at a given coordinate at the right address
-        ;ld b, y_coordinate
-        ;ld c, x_coordinate
-        ;call GETPIXELADDRESS
-        ;ld a, 1
-        ;call PLACEPIXEL
-
-
-START   ld a,paper_yellow ;OR bright
-        call COLOURTHESCREEN
-        call DRAWCHAR
+AppEntry:
+        nop
+        ld c, 0
+        LD b, 183
+START   push bc
+        halt
+        halt
+        call DeleteSprite
+        call MoveSpriteDown
+        call DrawSprite
+        pop bc
+        djnz START
         ret
 
+DeleteSprite:
+        ld b, 7  ;0-7 sprite graphic rows
+        ld a, (y_coordinate)
+        push af
+delloop push bc
+        ld a, (x_coordinate)
+        ld c, a
+        ld a, (y_coordinate)
+        ld b, a
+        call GetXYAddress
+        ld (hl), 0 ;wipe the pixel row
+        pop bc
+        ld a, (y_coordinate)
+        inc a
+        ld (y_coordinate), a
+        DJNZ delloop
+        pop af
+        ld (y_coordinate), a
+        ret
 
 DrawSprite:
-        ld hl, screen_start ; #4000
-        ld b, 0
-        ld c, x_coordinate
-        add hl, bc ; add x number of character columns
-        ld b, 7
-        ld de, Char2_Tab
-drawlp  ld a, (de) ; take a byte of graphic
-        ld (hl), a ; put it on screen
-        inc de ; next byte of graphic
-        inc h ; go down 1 pixel row by adding adding #0100 (256) to hl
-        DJNZ rowlp
+        ld b, 7  ;for sprite row loop
+        ld de, sprite
+        ld a, (y_coordinate)
+        push af
+drawlp  push bc
+        ld a, (x_coordinate)
+        ld c, a
+        ld a, (y_coordinate)
+        ld b, a
+        push de
+        call GetXYAddress
+        pop de
+        ld a, (de) ;take a byte of graphic
+        ld (hl), a ;put it on screen
+        inc de ;next byte of graphic
+        pop bc
+        ld a, (y_coordinate)
+        inc a
+        ld (y_coordinate), a
+        DJNZ drawlp
+        pop af
+        ld (y_coordinate), a
         ret
 
-; colours all 768 attributes
-; uses ldir which loads the contents of HL into the contents of DE then decrements BC until BC=0
-; the contents of hl before ldir will be the attribute value passed to the sub routine in a
-; ldir takes 21 T-States
-COLOURTHESCREEN:
-        ld hl, attr_start               ; start at address #5800
-        ld de, attr_start + 1           ; load next attribute address into de
-        ld bc, attributes_length - 1    ; decrement attribute length 1 times
-        ld (hl), a                      ; initialize the first attribute
-        ldir                            ; fill the attributes - ldir repeats LDI (LD (DE),(HL), then increments DE, HL, and decrements BC) until BC=0
-        ret
-
-DRAWCEILING:
-        ld (hl),255
-        inc hl
-        djnz DRAWCEILING
+MoveSpriteDown:
+        ;y++
+        ld a, (y_coordinate)
+        inc a
+        ld (y_coordinate), a
         ret
 
 ; IN  -  b = pixel row (0..191)
 ; IN  -  c = character column (0..31)
 ; OUT -  hl = screen address
 ; OUT -  de = trash
-GETPIXELADDRESS:
+GetXYAddress:
         ld  h, 0
-        ld  l, b            ; hl = row
-        add hl, hl          ; hl = row number * 2
+        ld  l, b            ; hl = Y (pixel row)
+        add hl, hl          ; hl = Y (pixel row number) * 2
         ld  de, screen_map  ; de = screen map
         add hl, de          ; de = screen_map + (row * 2)
         ld  a, (hl)         ; implements ld hl, (hl)
@@ -124,14 +110,6 @@ GETPIXELADDRESS:
         add hl, de          ; hl = screen addr + 32
         ret                 ; return screen_map[pixel_row]
 
-PLACEPIXEL:
-        ld (hl), a
-        ret
-
-MULTIPLY_HL:
-        inc hl
-        DJNZ MULTIPLY_HL
-        ret
 
 screen_map:
         defw #4000, #4100, #4200,  #4300
@@ -183,8 +161,12 @@ screen_map:
         defw #50E0, #51E0, #52E0,  #53E0
         defw #54E0, #55E0, #56E0,  #57E0
 
+x_coordinate:  db #0F
+y_coordinate:  db #00
+current_screen_address: defw #4000
 
-Char1_Tab:
+
+sprite:
         dg ---##---
         dg --####--
         dg -######-
@@ -194,15 +176,8 @@ Char1_Tab:
         dg --#--#--
         dg -##--##-
 
-Char2_Tab:
-        db %00011000
-        db %11111111
-        db %01111110
-        db %00111100
-        db %00111100
-        db %01111110
-        db %11111111
-        db %00011000
+
+
 
 
 ;**********************************************************************************

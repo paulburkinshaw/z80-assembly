@@ -18,7 +18,7 @@ Address(D)		Adress(H)		Variable name		Bytes		Comments
 																address 65368 (FF58H) by default but it can be poked with a new address
 																
 
-# The Screen Display*
+# The Screen Display
 
 ## The Character Set
 -----------------
@@ -87,19 +87,47 @@ Address(D)		Adress(H)		Variable name		Bytes		Comments
 	a thin 1 pixel line all the way across from left to right as the top line of each character (the first byte) is written to the screen for section 0
 	
 	Calculate the address of any display file byte:
-	16384 + character column number + (32 * character row number) + (256 * character byte number) + (2048 * screen section number)
+	#4000 (16384) + character column number + (32 * character row number) + (256 * character byte number) + (2048 * screen section number)
 	
 	for example, the address of: 
 		- character column 5, character row 0, character byte 0, screen section 0 is:
-			16384 + 5 + (32*0) + (256*0) + (2048*0) = 16389
+			#4000 + 5 + (32*0) + (256*0) + (2048*0) = #4005
 		- character column 5,  character row 0, character byte 1, screen section 0 is: 
-			16384 + 5 + (32*0) + (256*1) + (2048*0) = 16645
-			16384 + 5 + (32*0) + (256*2) + (2048*0) = 16901
-			16384 + 5 + (32*0) + (256*3) + (2048*0) = 17157
-			16384 + 5 + (32*0) + (256*4) + (2048*0) = 17413
-			16384 + 5 + (32*0) + (256*5) + (2048*0) = 17669
-			16384 + 5 + (32*0) + (256*6) + (2048*0) = 17925
-			16384 + 5 + (32*0) + (256*7) + (2048*0) = 18181
+			#4000 + 5 + (32*0) + (256*1) + (2048*0) = #4105
+		- character column 5,  character row 0, character byte 2, screen section 0 is: 
+			#4000 + 5 + (32*0) + (256*2) + (2048*0) = #4205
+		- character column 5,  character row 0, character byte 3, screen section 0 is: 
+			#4000 + 5 + (32*0) + (256*3) + (2048*0) = #4305
+		- character column 5,  character row 0, character byte 4, screen section 0 is: 
+			#4000 + 5 + (32*0) + (256*4) + (2048*0) = #4405
+		- character column 5,  character row 0, character byte 5, screen section 0 is: 
+			#4000 + 5 + (32*0) + (256*5) + (2048*0) = #4505
+		- character column 5,  character row 0, character byte 6, screen section 0 is: 
+			#4000 + 5 + (32*0) + (256*6) + (2048*0) = #4605
+		- character column 5,  character row 0, character byte 7, screen section 0 is: 
+			#4000 + 5 + (32*0) + (256*7) + (2048*0) = #4705
 	
 	
-	
+### finding a pixel address using a lookup table
+
+This approach uses a lookup table to store each 
+
+In current programming terms we store the address of the first pixel in each screen row, in an array. We then calculate the address as screen_map[y*2] + x. The multiplier of 2 is because it is an array of bytes and the addresses are words
+so for instance if y contains 2 (it is at pixel line 2 of 192) and the addresses for the rows are:
+
+#4000
+#4100
+#4200
+#4300
+
+then the address we're after is #4200 as its the second row (counting 0 index) but to get to this row in assembly we have to move down 4 (y*2, or y+y) times through the screen_map array as the addresses are stored in bytes so the physical addresses are stored like so:
+
+|-address byte number-|-address-|
+		0				40
+		1				00
+		2				41
+		3				00
+		4				42
+		5				00
+		6				43
+		7				00
