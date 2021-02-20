@@ -48,9 +48,10 @@ delloop push bc
         ld c, a
         ld a, (y_coordinate)
         ld b, a
-        call GetXYAddress
+        call GetXYAddress ;get the screen address for xy coordinates
         ld (hl), 0 ;wipe the pixel row
         pop bc
+        ;
         ld a, (y_coordinate)
         inc a
         ld (y_coordinate), a
@@ -161,9 +162,9 @@ screen_map:
         defw #50E0, #51E0, #52E0,  #53E0
         defw #54E0, #55E0, #56E0,  #57E0
 
-x_coordinate:  db #0F
-y_coordinate:  db #00
-current_screen_address: defw #4000
+x_coordinate:  db 15
+y_coordinate:  db 0
+sprite_row_address: defw #0000
 
 
 sprite:

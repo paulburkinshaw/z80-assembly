@@ -131,3 +131,25 @@ then the address we're after is #4200 as its the second row (counting 0 index) b
 		5				00
 		6				43
 		7				00
+
+
+### preshifting
+
+Now, there are two general approaches to “moving” a sprite on screen. One is to have a single image and shift it (by multiplying or dividing the values it consists of by two), depending on the sprite’s intended position inside a screen byte. You’ll need to make up to seven such shifts. This is pretty slow but very memory-efficient. The other method is essentially that of animation. You create several (say, eight) different sprite “frames,” each preshifted by one pixel and then choose to display the frame which corresponds to the offset within a byte.
+
+The actual offset value is obtained by simply masking off the five highest bits of the horizontal coordinate. Say, you horizontal position is 67. Sixty-seven divided by 8 is 8 and the remainder is 3. So, you’ll be drawing your sprite in the seventh byte counting from the lefthand edge of the screen, and the sprite will be shifted three pixels to the right within that byte. Thus, you’ll either need to shift your single sprite image right three times (divide it by eight), or choose to display Frame 3 of your pre-shifted sprite.
+
+
+You can print vertically from any line (there are 192 of these), so vertical movement is easy and smooth, but horizontally you can only print per column (there are only 32), so a 16 x 16 sprite has to be printed as a 24 x 16 object. Therefore you need to preshift the sprite as 8 images for how it would move between columns (8 pixels apart), like this:
+
+
+### timing
+
+zx spectrum screen is refreshed 50 times per second which = 50hz
+there are 50 interrupts generated per second 
+interput mode 1 is the default mode and this is generated when the v scan line reaches the bottom of the screen
+the halt instruction waits for the scan line to reach the bottom of the screen before resuming execution
+1 halt instruction within the main game loop would mean the program would run at 50fps
+2 halt instructions 25fps
+3 17fps
+4 12.5 fps
