@@ -140,7 +140,12 @@ Now, there are two general approaches to “moving” a sprite on screen. One is
 The actual offset value is obtained by simply masking off the five highest bits of the horizontal coordinate. Say, you horizontal position is 67. Sixty-seven divided by 8 is 8 and the remainder is 3. So, you’ll be drawing your sprite in the seventh byte counting from the lefthand edge of the screen, and the sprite will be shifted three pixels to the right within that byte. Thus, you’ll either need to shift your single sprite image right three times (divide it by eight), or choose to display Frame 3 of your pre-shifted sprite.
 
 
-You can print vertically from any line (there are 192 of these), so vertical movement is easy and smooth, but horizontally you can only print per column (there are only 32), so a 16 x 16 sprite has to be printed as a 24 x 16 object. Therefore you need to preshift the sprite as 8 images for how it would move between columns (8 pixels apart), like this:
+You can print vertically from any line (there are 192 of these), so vertical movement is easy and smooth, but horizontally you can only print per column (there are only 32), so a 16 x 16 sprite has to be printed as a 24 x 16 object. Therefore you need to preshift the sprite as 8 images for how it would move between columns (8 pixels apart)
+
+And for additional info, in this slowed down animation below, see how the lowest 3 bits of the x coordinate cycles 0 - 7 (decimal). So whatever the x coordinate is, we can grab the lowest 3 bits and get the correct sprite graphic.
+
+![](src/spriteexample.gif)
+
 
 
 ### timing

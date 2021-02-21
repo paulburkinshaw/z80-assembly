@@ -32,15 +32,18 @@ AppEntry:
 START   push bc
         halt
         halt
+        halt
+        halt
         call DeleteSprite
         call MoveSpriteDown
         call DrawSprite
+
         pop bc
         djnz START
         ret
 
 DeleteSprite:
-        ld b, 7  ;0-7 sprite graphic rows
+        ld b, 8                         ;0-7 sprite graphic rows
         ld a, (y_coordinate)
         push af
 delloop push bc
@@ -48,8 +51,8 @@ delloop push bc
         ld c, a
         ld a, (y_coordinate)
         ld b, a
-        call GetXYAddress ;get the screen address for xy coordinates
-        ld (hl), 0 ;wipe the pixel row
+        call GetXYAddress               ;get the screen address for xy coordinates
+        ld (hl), 0                      ;wipe the pixel row
         pop bc
         ;
         ld a, (y_coordinate)
@@ -61,7 +64,7 @@ delloop push bc
         ret
 
 DrawSprite:
-        ld b, 7  ;for sprite row loop
+        ld b, 8                         ;for sprite row loop
         ld de, sprite
         ld a, (y_coordinate)
         push af
@@ -73,9 +76,9 @@ drawlp  push bc
         push de
         call GetXYAddress
         pop de
-        ld a, (de) ;take a byte of graphic
-        ld (hl), a ;put it on screen
-        inc de ;next byte of graphic
+        ld a, (de)                      ;take a byte of graphic
+        ld (hl), a                      ;put it on screen
+        inc de                          ;next byte of graphic
         pop bc
         ld a, (y_coordinate)
         inc a
@@ -85,10 +88,12 @@ drawlp  push bc
         ld (y_coordinate), a
         ret
 
+
 MoveSpriteDown:
         ;y++
         ld a, (y_coordinate)
         inc a
+        ;inc a
         ld (y_coordinate), a
         ret
 
@@ -98,18 +103,18 @@ MoveSpriteDown:
 ; OUT -  de = trash
 GetXYAddress:
         ld  h, 0
-        ld  l, b            ; hl = Y (pixel row)
-        add hl, hl          ; hl = Y (pixel row number) * 2
-        ld  de, screen_map  ; de = screen map
-        add hl, de          ; de = screen_map + (row * 2)
-        ld  a, (hl)         ; implements ld hl, (hl)
+        ld  l, b                        ; hl = Y (pixel row)
+        add hl, hl                      ; hl = Y (pixel row number) * 2
+        ld  de, screen_map              ; de = screen map
+        add hl, de                      ; de = screen_map + (row * 2)
+        ld  a, (hl)                     ; implements ld hl, (hl)
         inc hl
         ld  h, (hl)
-        ld  l, a            ; hl = address of first pixel in screen map
+        ld  l, a                        ; hl = address of first pixel in screen map
         ld  d, 0
-        ld  e, c            ; de = X (character based)
-        add hl, de          ; hl = screen addr + 32
-        ret                 ; return screen_map[pixel_row]
+        ld  e, c                        ; de = X (character based)
+        add hl, de                      ; hl = screen addr + 32
+        ret                             ; return screen_map[pixel_row]
 
 
 screen_map:
@@ -163,7 +168,7 @@ screen_map:
         defw #54E0, #55E0, #56E0,  #57E0
 
 x_coordinate:  db 15
-y_coordinate:  db 0
+y_coordinate:  db -1
 sprite_row_address: defw #0000
 
 
