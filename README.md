@@ -147,6 +147,18 @@ And for additional info, in this slowed down animation below, see how the lowest
 ![](src/spriteexample.gif)
 
 
+### Screen address map
+
+![](src/ScreenAddressMap.PNG)
+
+adding 1 to the low byte moves left to right across one character column, with the 4 low bits we can move to up to 32 columns (0-31) 
+
+adding 1 to the high byte moves down one pixel line within a character row
+
+adding 32 to the low byte moves down one character row
+
+adding 8 to the high byte moves down one screen third
+
 
 ### timing
 
